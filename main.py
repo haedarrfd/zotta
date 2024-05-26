@@ -11,6 +11,7 @@ from firebase_admin import credentials, firestore
 import time
 from datetime import datetime
 import base64
+import json
 
 # Get keys from .env
 load_dotenv()
@@ -20,8 +21,9 @@ st.set_page_config(page_title="Zotta Chatbot with Document", page_icon="🤖", l
 
 # Initialize Firebase 
 if not firebase_admin._apps:
-  cred = credentials.Certificate("key.json")
-  firebase_admin.initialize_app(cred)
+  key_dict = json.loads(st.secrets["textkey"])
+  # cred = credentials.Certificate("key.json")
+  firebase_admin.initialize_app(key_dict)
 
 db = firestore.client()
 
