@@ -6,7 +6,7 @@ import jwt
 # Sign in with google initialize
 CLIENT_ID = st.secrets['CLIENT_ID']
 CLIENT_SECRET = st.secrets['CLIENT_SECRET']
-REDIRECT_URI = 'http://localhost:8501/'
+REDIRECT_URI = st.secrets['REDIRECT_URI']
 
 client = GoogleOAuth2(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
