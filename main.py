@@ -31,27 +31,24 @@ date_time = datetime.fromtimestamp(created_at)
 str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
 
 # Sticky Sidebar
-st.markdown(
-        """
-       <style>
-       [data-testid="stSidebar"][aria-expanded="true"]{
-           min-width: 275px;
-           max-width: 350px;
-       }
-       """,
-        unsafe_allow_html=True)
+st.markdown("""
+<style>
+[data-testid="stSidebar"][aria-expanded="true"]{
+    min-width: 275px;
+    max-width: 350px;
+}""", unsafe_allow_html=True)
 
 # Button styles
 st.markdown("""
 <style>
-div.stButton > button:first-child {
+  div.stButton > button:first-child {
     background-color: #D10000;
     color: #f3f4f6;
     border: none;
     padding: 8px 20px;
     transition: background-color 0.2s ease-in-out;
 } 
-div.stButton > button:hover {
+  div.stButton > button:hover {
     background-color: #b30000;
 } 
 </style>""", unsafe_allow_html=True) 
