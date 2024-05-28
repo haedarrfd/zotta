@@ -5,6 +5,7 @@ from langchain_text_splitters import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
+from langchain.prompts import PromptTemplate
 import firebase_admin
 from firebase_admin import credentials, auth, firestore, exceptions
 import time
@@ -14,16 +15,18 @@ import asyncio
 from Oauth import *
 import streamlit.components.v1 as components
 import base64
+import json
 
 # Get keys from .env
 load_dotenv()
 
 # Page Title
-st.set_page_config(page_title="Zotta Chatbot with Document", page_icon="🤖", layout='centered')
+st.set_page_config(page_title="Zotta Virtual Assistant", page_icon="🤖", layout='centered')
 
 # Initialize Firebase 
 if not firebase_admin._apps:
-  cred = credentials.Certificate("key.json")
+  key_dict = json.loads(st.secrets["textkey"])
+  cred = credentials.Certificate(key_dict)
   firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -72,7 +75,7 @@ def render_image(filepath: str):
   image_string = f'data:image/png;base64,{content_encode}'
   return image_string
 
-zottaImg = render_image('./resource/zotta.png')
+zottaImg = render_image('./src/zotta.png')
 
 # Read the file and extract the content
 def handleFileContext(file):
@@ -128,8 +131,7 @@ def home():
   try:
     user = auth.get_user_by_email(global_state.email)
 
-
-    model_language = ChatOpenAI(temperature=0, model="gpt-4o")
+    model_language = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0125")
 
     with st.sidebar:
       get_user_by_uid = db.collection('users').document(user.uid).get()
@@ -164,7 +166,16 @@ def home():
       with st.spinner('Loading...'):
         if prompt != '' and prompt is not None:
           docs = data_content.similarity_search(prompt)
-          chain = load_qa_chain(model_language, chain_type='stuff')
+          prompt_template = """
+            Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
+            provided context just say, "Pertanyaan tidak sesuai dengan materi yang diunggah.", don't provide the wrong answer\n\n
+            Context:\n {context}?\n
+            Question: \n{question}\n
+
+            Answer:
+            """
+          promptTemp = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+          chain = load_qa_chain(model_language, chain_type='stuff', prompt=promptTemp)
           response = chain({"input_documents": docs, "question": prompt}, return_only_outputs=True)
 
           db.collection('chat_histories').document().set({
@@ -179,7 +190,7 @@ def home():
           container.chat_message('assistant').write(f"Zotta : {response['output_text']}")
           
   except Exception as err:
-    st.error(f"Something wrong, Please be sure upload a file or the file format! {err}")
+    st.error(f"Something wrong, Please be sure upload a file or the file format!")
 
 # Sign In page
 def signInPage(url = ''):
