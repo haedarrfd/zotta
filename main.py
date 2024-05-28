@@ -22,8 +22,8 @@ st.set_page_config(page_title="Zotta Chatbot with Document", page_icon="🤖", l
 # Initialize Firebase 
 if not firebase_admin._apps:
   key_dict = json.loads(st.secrets["textkey"])
-  # cred = credentials.Certificate("key.json")
-  firebase_admin.initialize_app(key_dict)
+  cred = credentials.Certificate(key_dict)
+  firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
