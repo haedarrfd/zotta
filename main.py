@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from httpx_oauth.clients.google import GoogleOAuth2
 import asyncio
-from Oauth import *
+from src.Oauth import *
 import base64
 import json
 
