@@ -13,7 +13,6 @@ from datetime import datetime
 from httpx_oauth.clients.google import GoogleOAuth2
 import asyncio
 from Oauth import *
-import streamlit.components.v1 as components
 import base64
 import json
 
@@ -42,29 +41,26 @@ date_time = datetime.fromtimestamp(created_at)
 str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
 
 # Sticky Sidebar
-st.markdown(
-        """
-       <style>
-       [data-testid="stSidebar"][aria-expanded="true"]{
-           min-width: 275px;
-           max-width: 350px;
-       }
-       """,
-        unsafe_allow_html=True)
+st.markdown("""
+<style>
+  [data-testid="stSidebar"][aria-expanded="true"]{
+    min-width: 275px;
+    max-width: 350px;
+  }""", unsafe_allow_html=True)
 
 # Button styles
 st.markdown("""
 <style>
-div.stButton > button:first-child {
+  div.stButton > button:first-child {
     background-color: #D10000;
     color: #f3f4f6;
     border: none;
     padding: 8px 20px;
     transition: background-color 0.2s ease-in-out;
-} 
-div.stButton > button:hover {
+  } 
+  div.stButton > button:hover {
     background-color: #b30000;
-} 
+  } 
 </style>""", unsafe_allow_html=True) 
 
 # Rendering image using base64
@@ -98,7 +94,7 @@ def handleFileContext(file):
   vector = FAISS.from_texts(chunks, embeddings)
   return vector
 
-# Add data user to database firebase firestore
+# Add data user to database 
 def dataUser(email: str, username: str, created_at: str):
   # Check if user already is exist
   docs = db.collection('users').where('email', '==', email).stream()
@@ -194,62 +190,22 @@ def home():
 
 # Sign In page
 def signInPage(url = ''):
-  components.html(f""" 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  st.markdown(f'''<div style="text-align: center; display: flex; justify-content: center; align-items: center; margin-top: -50px; margin-bottom: 20px;"><img src="{zottaImg}" alt="Logo app" style="width: 100px; height: 100px;" draggable="false"/></div>''', unsafe_allow_html=True)
+  st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600; margin-bottom: 75px;">Zotta</p>', unsafe_allow_html=True)
 
-    <style>
-      body {{
-        background-color: #1e293b;
-      }}
-      .custom_layout {{
-        width: 300px;
-      }}
-      .btn-primary {{
-        background-color: #CCD0FF;
-        color: #111827;
-        font-weight: 500;
-        border: none;
-        padding: 10px 0;
-        font-size: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        border-radius: 8px;
-        transition: all 0.2s ease-in-out;
-      }}
-      .btn-primary:hover {{
-        background-color: #b3b9ff;
-        color: #111827;
-      }}           
-      .google_icon {{
-        width: 20px;
-        height: auto;
-        text-align: center;
-        display: flex;
-        align-items: center;
-      }}
-      </style>
-                  
-      <div class="container mx-auto text-center">
-        <div class="row justify-content-center">
-          <div class="col-md-3 text-center mt-5 custom_layout">
-            <a href="{url}" target="_blank" class="btn btn-primary">
-              Sign In with google
-              <div class="google_icon">
-                <svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 0 24 24" width="100%" fit="" preserveAspectRatio="xMidYMid meet" focusable="false"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path><path d="M1 1h22v22H1z" fill="none"></path></svg> 
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-""", height=200)
+  login_button = f"""
+  <div style="display: flex; justify-content: center;">
+    <a href="{url}" target="_self" style="background-color: #CCD0FF; color: #111827; text-decoration: none; text-align: center; letter-spacing: 0.15px; font-weight: 600; font-size: 16px; margin: 4px 2px; cursor: pointer; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px">
+      Sign In with google
+      <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google logo" style="margin-right: 8px; width: 23px; height: 23px; background-color: transparent; border: none; border-radius: 4px;">
+      </a>
+  </div>
+  """
+  st.markdown(login_button, unsafe_allow_html=True)
 
 # Handle user authentication and redirection
-def main(global_state, inner_call=False):
-  client: GoogleOAuth2 = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
+def main(global_state):
+  client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
   authorization_url = asyncio.run(
       get_authorization_url(client=client, redirect_uri=REDIRECT_URI))
   
@@ -264,20 +220,25 @@ def main(global_state, inner_call=False):
     # Decoding user token
     user_info = decode_user(token=token_from_params['id_token'])
     global_state.email = user_info['email']
-    # Store the user to firebase collection
+    # Store the user to database
     dataUser(global_state.email, user_info['name'], str_date_time)
     st.rerun()
 
-  if inner_call:
-    user_email = global_state.email
-    if not user_email:
-      signInPage(authorization_url)
-    if user_email:
-      home()
-
-  if not inner_call:
+  if global_state.email:
+    home()
+  else:
     signInPage(authorization_url)
-
+    
 
 if __name__ == '__main__':
-  main(global_state=global_state, inner_call=True)
+  # Initialization global state email
+  class GlobalState:
+    def __init__(self):
+        self.email = ''
+
+  if 'global_state' not in st.session_state:
+    st.session_state.global_state = GlobalState()
+
+  global_state = st.session_state.global_state
+
+  main(global_state=global_state)

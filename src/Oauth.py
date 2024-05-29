@@ -29,13 +29,3 @@ def get_token_from_params(client: GoogleOAuth2, redirect_uri: str):
     token = asyncio.run(get_access_token(client=client, redirect_uri=redirect_uri, code=code))
     st.query_params.clear()
     return token
-
-# Initialization global state email
-class global_state:
-    def __init__(self):
-        self.email = ''
-
-if 'global_state' not in st.session_state:
-    st.session_state.global_state = global_state()
-
-global_state = st.session_state.global_state
