@@ -13,6 +13,7 @@ from datetime import datetime
 from httpx_oauth.clients.google import GoogleOAuth2
 import asyncio
 from Oauth import *
+import streamlit.components.v1 as components
 import base64
 import json
 
@@ -41,26 +42,29 @@ date_time = datetime.fromtimestamp(created_at)
 str_date_time = date_time.strftime("%d-%m-%Y, %H:%M:%S")
 
 # Sticky Sidebar
-st.markdown("""
-<style>
-  [data-testid="stSidebar"][aria-expanded="true"]{
-    min-width: 275px;
-    max-width: 350px;
-  }""", unsafe_allow_html=True)
+st.markdown(
+        """
+       <style>
+       [data-testid="stSidebar"][aria-expanded="true"]{
+           min-width: 275px;
+           max-width: 350px;
+       }
+       """,
+        unsafe_allow_html=True)
 
 # Button styles
 st.markdown("""
 <style>
-  div.stButton > button:first-child {
+div.stButton > button:first-child {
     background-color: #D10000;
     color: #f3f4f6;
     border: none;
     padding: 8px 20px;
     transition: background-color 0.2s ease-in-out;
-  } 
-  div.stButton > button:hover {
+} 
+div.stButton > button:hover {
     background-color: #b30000;
-  } 
+} 
 </style>""", unsafe_allow_html=True) 
 
 # Rendering image using base64
@@ -94,7 +98,7 @@ def handleFileContext(file):
   vector = FAISS.from_texts(chunks, embeddings)
   return vector
 
-# Add data user to database 
+# Add data user to database firebase firestore
 def dataUser(email: str, username: str, created_at: str):
   # Check if user already is exist
   docs = db.collection('users').where('email', '==', email).stream()
@@ -194,13 +198,13 @@ def signInPage(url = ''):
   st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600; margin-bottom: 75px;">Zotta</p>', unsafe_allow_html=True)
 
   login_button = f"""
-  <div style="display: flex; justify-content: center;">
-    <a href="{url}" target="_self" style="background-color: #CCD0FF; color: #111827; text-decoration: none; text-align: center; letter-spacing: 0.15px; font-weight: 600; font-size: 16px; margin: 4px 2px; cursor: pointer; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px">
-      Sign In with google
-      <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google logo" style="margin-right: 8px; width: 23px; height: 23px; background-color: transparent; border: none; border-radius: 4px;">
-      </a>
-  </div>
-  """
+<div style="display: flex; justify-content: center;">
+    <a href="{url}" target="_self" style="background-color: #CCD0FF; color: #111827; text-decoration: none; text-align: center; letter-spacing: 0.15px; font-weight: 600; font-size: 16px; margin: 4px 2px; cursor: pointer; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+        Sign In with google
+        <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google logo" style="margin-right: 8px; width: 23px; height: 23px; background-color: transparent; border: none; border-radius: 4px;">
+    </a>
+</div>
+"""
   st.markdown(login_button, unsafe_allow_html=True)
 
 # Handle user authentication and redirection
@@ -224,6 +228,8 @@ def main(global_state):
     dataUser(global_state.email, user_info['name'], str_date_time)
     st.rerun()
 
+  print(global_state.email)  
+
   if global_state.email:
     home()
   else:
@@ -231,14 +237,4 @@ def main(global_state):
     
 
 if __name__ == '__main__':
-  # Initialization global state email
-  class GlobalState:
-    def __init__(self):
-        self.email = ''
-
-  if 'global_state' not in st.session_state:
-    st.session_state.global_state = GlobalState()
-
-  global_state = st.session_state.global_state
-
   main(global_state=global_state)
