@@ -227,6 +227,7 @@ def main(global_state):
 
   if global_state.email:
     home()
+    st.query_params.clear()
   else:
     signInPage(authorization_url)
     
