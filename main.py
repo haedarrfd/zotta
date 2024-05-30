@@ -193,6 +193,7 @@ def signInPage(url = ''):
   st.markdown(f'''<div style="text-align: center; display: flex; justify-content: center; align-items: center; margin-top: -50px; margin-bottom: 20px;"><img src="{zottaImg}" alt="Logo app" style="width: 100px; height: 100px;" draggable="false"/></div>''', unsafe_allow_html=True)
   st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600; margin-bottom: 75px;">Zotta</p>', unsafe_allow_html=True)
 
+  st.query_params.get('auth_uri')
   login_button = f"""
   <div style="display: flex; justify-content: center;">
     <a href="{url}" target="_self" style="background-color: #CCD0FF; color: #111827; text-decoration: none; text-align: center; letter-spacing: 0.15px; font-weight: 600; font-size: 16px; margin: 4px 2px; cursor: pointer; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px">
@@ -222,6 +223,7 @@ def main(global_state):
     global_state.email = user_info['email']
     # Store the user to database
     dataUser(global_state.email, user_info['name'], str_date_time)
+    st.query_params.clear()
     st.rerun()
 
   if global_state.email:
