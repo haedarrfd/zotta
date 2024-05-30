@@ -222,6 +222,7 @@ def main(global_state):
     global_state.email = user_info['email']
     # Store the user to database
     dataUser(global_state.email, user_info['name'], str_date_time)
+    st.query_params.clear()
     st.rerun()
 
   if global_state.email:
