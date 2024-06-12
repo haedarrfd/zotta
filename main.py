@@ -137,7 +137,7 @@ def home():
       
       upload_file = st.file_uploader('Upload your file', help='PDF', type=['pdf'])
       if upload_file is None:
-        st.warning('You must upload a file before asking a question!')
+        st.warning('You have to upload a file before continue!')
 
       # Sign out button
       if st.button('Sign Out', type='primary', key='sign_out'):
@@ -153,7 +153,7 @@ def home():
     prompt = st.chat_input('Send a message to Zotta')
 
     if upload_file is None and prompt is not None:
-      st.error('You have to upload a file before continue!')
+      st.error('You must upload a file before asking a question!')
 
     # Process extract content from a pdf file
     if upload_file is not None:
