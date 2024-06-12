@@ -132,12 +132,12 @@ def home():
     with st.sidebar:
       get_user_by_uid = db.collection('users').document(user.uid).get()
       if get_user_by_uid.exists:
-        username = get_user_by_uid.to_dict().get('username')
+        username = get_user_by_uid.to_dict().get('username', 'user')
         st.markdown(f'''<p style="font-size: 18px; font-weight: 500; margin-bottom: 30px;">Welcome, {username}</p>''', unsafe_allow_html=True)
       
       upload_file = st.file_uploader('Upload your file', help='PDF', type=['pdf'])
       if upload_file is None:
-        st.warning('Please upload a file before continue!')
+        st.warning('You must upload a file before asking a question!')
 
       # Sign out button
       if st.button('Sign Out', type='primary', key='sign_out'):
@@ -186,7 +186,7 @@ def home():
           container.chat_message('assistant').write(f"Zotta : {response['output_text']}")
           
   except Exception as err:
-    st.error(f"Something wrong, Please be sure upload a file or the file format!")
+    st.error(f"Something wrong, Please be sure upload a PDF file with valid content!")
 
 # Sign In page
 def signInPage(url = ''):
