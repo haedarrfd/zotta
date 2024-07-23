@@ -94,7 +94,7 @@ def handleFileContext(file):
   vector = FAISS.from_texts(chunks, embeddings)
   return vector
 
-# Add data user to database 
+# Add user to database 
 def dataUser(email: str, username: str, created_at: str):
   # Check if user already is exist
   docs = db.collection('users').where('email', '==', email).stream()
@@ -124,69 +124,66 @@ def dataUser(email: str, username: str, created_at: str):
   return user
 
 def home():
+  user = auth.get_user_by_email(global_state.email)
+  model_language = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0125")
+  errorMsg = ''
+
+  with st.sidebar:
+    get_user_by_uid = db.collection('users').document(user.uid).get()
+    username = get_user_by_uid.to_dict().get('username', 'user')
+    st.markdown(f'''<p style="font-size: 18px; font-weight: 500; margin-bottom: 30px;">Welcome, {username}</p>''', unsafe_allow_html=True)
+    
+    upload_file = st.file_uploader('Upload your file', help='PDF', type=['pdf'])
+    if upload_file is None:
+      st.warning('You have to upload a file before continue!')
+    
+    # Sign out button
+    if st.button('Sign Out', type='primary', key='sign_out'):
+      global_state.email = ''
+      st.rerun()
+
+  # Header
+  st.markdown(f'''<div style="text-align: center; display: flex; justify-content: center; align-items: center; margin-top: -50px; margin-bottom: 20px;"><img src="{zottaImg}" alt="Logo app" style="width: 100px; height: 100px;" draggable="false"/></div>''', unsafe_allow_html=True)
+  st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600;">Zotta</p>', unsafe_allow_html=True)
+
+  container = st.container(border=True)
+  prompt = st.chat_input('Send a message to Zotta')
+
+  # Process extract content from a pdf file
   try:
-    user = auth.get_user_by_email(global_state.email)
-
-    model_language = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0125")
-
-    with st.sidebar:
-      get_user_by_uid = db.collection('users').document(user.uid).get()
-      if get_user_by_uid.exists:
-        username = get_user_by_uid.to_dict().get('username', 'user')
-        st.markdown(f'''<p style="font-size: 18px; font-weight: 500; margin-bottom: 30px;">Welcome, {username}</p>''', unsafe_allow_html=True)
-      
-      upload_file = st.file_uploader('Upload your file', help='PDF', type=['pdf'])
-      if upload_file is None:
-        st.warning('You have to upload a file before continue!')
-
-      # Sign out button
-      if st.button('Sign Out', type='primary', key='sign_out'):
-        global_state.email = ''
-        st.rerun()
-
-    # Header
-    st.markdown(f'''<div style="text-align: center; display: flex; justify-content: center; align-items: center; margin-top: -50px; margin-bottom: 20px;"><img src="{zottaImg}" alt="Logo app" style="width: 100px; height: 100px;" draggable="false"/></div>''', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600;">Zotta</p>', unsafe_allow_html=True)
-
-    container = st.container(border=True)
-
-    prompt = st.chat_input('Send a message to Zotta')
-
-    if upload_file is None and prompt is not None:
-      st.error('You must upload a file before asking a question!')
-
-    # Process extract content from a pdf file
-    if upload_file is not None:
+    if upload_file is not None and prompt != '' and prompt is not None:
       data_content = handleFileContext(upload_file)
 
       with st.spinner('Loading...'):
-        if prompt != '' and prompt is not None:
-          docs = data_content.similarity_search(prompt)
-          prompt_template = """
-            Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
-            provided context just say, "Pertanyaan tidak sesuai dengan materi yang diunggah.", don't provide the wrong answer\n\n
-            Context:\n {context}?\n
-            Question: \n{question}\n
+        docs = data_content.similarity_search(prompt)
+        prompt_template = """
+          Jawablah pertanyaan sedetail mungkin dari konteks yang disediakan, pastikan untuk memberikan semua detailnya, jika jawabannya tidak sesuai konteks yang diberikan katakan saja, “Pertanyaan tidak sesuai dengan materi yang diunggah.”\n\n
+          Context:\n {context}?\n
+          Question: \n{question}\n
 
-            Answer:
-            """
-          promptTemp = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
-          chain = load_qa_chain(model_language, chain_type='stuff', prompt=promptTemp)
-          response = chain({"input_documents": docs, "question": prompt}, return_only_outputs=True)
+          Answer:
+          """
+        promptTemp = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+        chain = load_qa_chain(model_language, chain_type='stuff', prompt=promptTemp)
+        response = chain({"input_documents": docs, "question": prompt}, return_only_outputs=True)
 
-          db.collection('chat_histories').document().set({
-            'user_id': str(user.uid),
-            'document_type': str(upload_file.type),
-            'user_message': str(prompt),
-            'bot_response': str(response['output_text']),
-            'created_at': str(str_date_time)
-          })
+        db.collection('chat_histories').document().set({
+          'user_id': str(user.uid),
+          'user_message': str(prompt),
+          'bot_response': str(response['output_text']),
+          'created_at': str(str_date_time)
+        })
 
-          container.chat_message('human').write(prompt)
-          container.chat_message('assistant').write(f"Zotta : {response['output_text']}")
-          
-  except Exception as err:
-    st.error(f"Something wrong, Please be sure upload a PDF file with valid content!")
+        container.chat_message('human').write(prompt)
+        container.chat_message('assistant').write(f"Zotta : {response['output_text']}")
+
+    elif upload_file is None and prompt is not None:
+       errorMsg = st.error('You must upload a file before asking a question!')
+       return errorMsg 
+    
+  except Exception:
+    errorMsg = st.error(f"Something wrong, Please be sure upload a PDF file with valid content!")
+    return errorMsg
 
 # Sign In page
 def signInPage(url = ''):
@@ -214,7 +211,7 @@ def main(global_state):
     try:
       # Get token from params
       token_from_params = get_token_from_params(client=client, redirect_uri=REDIRECT_URI)
-    except Exception as err:
+    except Exception:
       return None
     
     # Decoding user token
@@ -224,13 +221,10 @@ def main(global_state):
     dataUser(global_state.email, user_info['name'], str_date_time)
     st.query_params.clear()
     st.rerun()
-
-  if global_state.email:
+  else:
     home()
     st.query_params.clear()
-  else:
-    signInPage(authorization_url)
-    
+
 
 if __name__ == '__main__':
   # Initialization global state email
