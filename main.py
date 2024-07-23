@@ -147,6 +147,15 @@ def home():
   st.markdown('<p style="text-align: center; font-size: 32px; font-weight: 600;">Zotta</p>', unsafe_allow_html=True)
 
   container = st.container(border=True)
+  if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
+  for message in st.session_state.messages:
+    if message['role'] == 'user':
+      container.chat_message('human').write(message['content'])
+    elif message['role'] == 'bot':
+      container.chat_message('assistant').write(f"Zotta : {message['content']}")
+
   prompt = st.chat_input('Send a message to Zotta')
 
   # Process extract content from a pdf file
@@ -166,6 +175,9 @@ def home():
         promptTemp = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
         chain = load_qa_chain(model_language, chain_type='stuff', prompt=promptTemp)
         response = chain({"input_documents": docs, "question": prompt}, return_only_outputs=True)
+
+        st.session_state.messages.append({'role': 'user', 'content': prompt})
+        st.session_state.messages.append({'role': 'bot', 'content': response['output_text']})
 
         db.collection('chat_histories').document().set({
           'user_id': str(user.uid),
